@@ -79,12 +79,15 @@ public class AtaxxMove extends GameMove {
 		this.row = row;
 		this.col = col;
 	}
-
+	
+	
 	@Override
 	public void execute(Board board, List<Piece> pieces) {
+		//Introducir Obstaculos
 		if (board.getPosition(row, col) == null) {
 			board.setPosition(row, col, getPiece());
-		} else {
+		} 
+		else {
 			throw new GameError("position (" + row + "," + col + ") is already occupied!");
 		}
 	}

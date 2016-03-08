@@ -42,28 +42,38 @@ public class AtaxxRules implements GameRules {
 	protected final Pair<State, Piece> gameInPlayResult = new Pair<State, Piece>(State.InPlay, null);
 
 	private int dim;
+	private int obstacles;
 
-	public AtaxxRules(int dim) {
+	public AtaxxRules(int dim, int obs) {
 		if (dim < 5) {
 			throw new GameError("Dimension must be at least 5: " + dim);
 		}
 		else if (dim % 2 == 0){
 			throw new GameError("Dimension must be odd: " + dim);
 		}
+		else if (obs > dim * dim){
+			throw new GameError("The number of obstacules must be less than " + (dim*dim));
+		}
 		else {
 			this.dim = dim;
+			this.obstacles = obs;
 		}
 	}
 
 	@Override
 	public String gameDesc() {
-		return "Ataxx " + dim + "x" + dim;
+		if (obstacles == 0){
+			return "Ataxx " + dim + "x" + dim;
+		}
+		else return "Ataxx " + dim + "x" + dim + " with " + obstacles + "obstacles";
 	}
 
 	@Override
 	public Board createBoard(List<Piece> pieces) {
 		return new FiniteRectBoard(dim, dim);
 	}
+	
+	//Inicializar el tablero
 
 	@Override
 	public Piece initialPlayer(Board board, List<Piece> playersPieces) {

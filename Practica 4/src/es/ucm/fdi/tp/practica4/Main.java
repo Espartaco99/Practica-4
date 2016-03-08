@@ -24,6 +24,7 @@ import es.ucm.fdi.tp.basecode.bgame.model.GameError;
 import es.ucm.fdi.tp.basecode.bgame.model.Piece;
 import es.ucm.fdi.tp.basecode.connectN.ConnectNFactory;
 import es.ucm.fdi.tp.basecode.ttt.TicTacToeFactory;
+import es.ucm.fdi.tp.practica4.ataxx.AtaxxFactory;
 
 /**
  * This is the class with the main method for the board games application.
@@ -77,7 +78,7 @@ public class Main {
 	 * Juegos disponibles.
 	 */
 	enum GameInfo {
-		CONNECTN("cn", "ConnectN"), TicTacToe("ttt", "Tic-Tac-Toe"), AdvancedTicTacToe("attt", "Advanced Tic-Tac-Toe");
+		CONNECTN("cn", "ConnectN"), TicTacToe("ttt", "Tic-Tac-Toe"), AdvancedTicTacToe("attt", "Advanced Tic-Tac-Toe"), Ataxx("at", "Ataxx");
 
 		private String id;
 		private String desc;
@@ -137,7 +138,7 @@ public class Main {
 	 * <p>
 	 * Juego por defecto.
 	 */
-	final private static GameInfo DEFAULT_GAME = GameInfo.CONNECTN;
+	final private static GameInfo DEFAULT_GAME = GameInfo.Ataxx;
 
 	/**
 	 * default view to use.
@@ -228,6 +229,16 @@ public class Main {
 	 * 
 	 */
 	private static Integer dimCols;
+	
+	/**
+	 * Number of obstacles provided with the option -o ({@code null} if not
+	 * provided).
+	 * 
+	 * <p>
+	 * Numero de obstaculos proporcionados con la opcion -o, o {@code null} si no se
+	 * incluye la opcion -o.
+	 */
+	private static Integer obstacles;
 
 	/**
 	 * The algorithm to be used by the automatic player. Not used so far, it is
@@ -264,6 +275,7 @@ public class Main {
 		Options cmdLineOptions = new Options();
 		cmdLineOptions.addOption(constructHelpOption()); // -h or --help
 		cmdLineOptions.addOption(constructGameOption()); // -g or --game
+		cmdLineOptions.addOption(constructObstaclesOption()); // -o or --obstacles
 		cmdLineOptions.addOption(constructViewOption()); // -v or --view
 		cmdLineOptions.addOption(constructMlutiViewOption()); // -m or
 																// --multiviews
@@ -278,6 +290,7 @@ public class Main {
 			parseHelpOption(line, cmdLineOptions);
 			parseDimOptionn(line);
 			parseGameOption(line);
+			parseObstaclesOption(line);
 			parseViewOption(line);
 			parseMultiViewOption(line);
 			parsePlayersOptions(line);
@@ -532,10 +545,70 @@ public class Main {
 		case TicTacToe:
 			gameFactory = new TicTacToeFactory();
 			break;
+		case Ataxx:
+			if (obstacles == null){
+				if (dimRows != null && dimCols != null && dimRows == dimCols && dimRows % 2 != 0){
+					gameFactory = new AtaxxFactory(dimRows);
+				} else {
+					gameFactory = new AtaxxFactory();
+				}
+			}
+			else {
+				if (dimRows != null && dimCols != null && dimRows == dimCols && dimRows % 2 != 0){
+					gameFactory = new AtaxxFactory(dimRows, obstacles);
+				} else {
+					gameFactory = new AtaxxFactory();
+				}
+			}
+			break;
 		default:
 			throw new UnsupportedOperationException("Something went wrong! This program point should be unreachable!");
 		}
 	
+	}
+	
+	/**
+	 * Builds the obstacles (-o or --obstacles) CLI option.
+	 * 
+	 * <p>
+	 * Construye la opcion CLI -o.
+	 * 
+	 * @return CLI {@link {@link Option} for the obstacles option.
+	 *         <p>
+	 *         Objeto {@link Option} de esta opcion.
+	 */
+
+	private static Option constructObstaclesOption() {
+		return new Option("o", "obstacles", true,
+				"The number of obstacles in the board.");
+	}
+
+	/**
+	 * Parses the obstacles option (-o or --obstacles). It sets the value of
+	 * {@link #obstacles} accordingly. 
+	 * 
+	 * <p>
+	 * Extrae la opcion de obstaculos (-o). Asigna el valor del atributo
+	 * {@link #obstacles}.
+	 * 
+	 * @param line
+	 *            CLI {@link CommandLine} object.
+	 * @throws ParseException
+	 *             If an invalid value is provided (the valid values are those
+	 *             of {@link GameInfo}).
+	 *             <p>
+	 *             Si se proporciona un valor invalido (Los valores validos son
+	 *             los de {@link GameInfo}).
+	 */
+	private static void parseObstaclesOption(CommandLine line) throws ParseException {
+		String dimVal = line.getOptionValue("o");
+		if (dimVal != null) {
+			try {
+				obstacles = Integer.parseInt(dimVal);
+			} catch (NumberFormatException e) {
+				throw new ParseException("Invalid dimension: " + dimVal);
+			}
+		}
 	}
 
 	/**

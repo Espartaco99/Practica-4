@@ -30,22 +30,38 @@ import es.ucm.fdi.tp.basecode.bgame.views.GenericConsoleView;
 public class AtaxxFactory implements GameFactory {
 
 	private int dim;
+	private int obstacles;
 
 	public AtaxxFactory() {
-		this(5);
+		this(7);
+		obstacles = 0;
 	}
 
 	public AtaxxFactory(int dim) {
-		if (dim < 3) {
-			throw new GameError("Dimension must be at least 3: " + dim);
+		if (dim < 5) {
+			throw new GameError("Dimension must be at least 5: " + dim);
 		} else {
 			this.dim = dim;
+		}
+	}
+	
+	
+	public AtaxxFactory(int dim, int obs) {
+		if (dim < 5) {
+			throw new GameError("Dimension must be at least 5: " + dim);
+		}
+		else if (obs > dim * dim){
+			throw new GameError("The number of obstacules must be less than " + (dim*dim));
+		}
+		else {
+			this.dim = dim;
+			this.obstacles = obs;
 		}
 	}
 
 	@Override
 	public GameRules gameRules() {
-		return new AtaxxRules(dim);
+		return new AtaxxRules(dim, obstacles);
 	}
 
 	@Override
@@ -66,7 +82,7 @@ public class AtaxxFactory implements GameFactory {
 	}
 
 	/**
-	 * By default, we have two players, X and O.
+	 * By default, we have two players, X and O, with 2 pieces .
 	 * <p>
 	 * Por defecto, hay dos jugadores, X y O.
 	 */
@@ -77,6 +93,8 @@ public class AtaxxFactory implements GameFactory {
 		pieces.add(new Piece("O"));
 		return pieces;
 	}
+	
+	
 
 	@Override
 	public void createConsoleView(Observable<GameObserver> g, Controller c) {
