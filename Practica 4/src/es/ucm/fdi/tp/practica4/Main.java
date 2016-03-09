@@ -470,6 +470,8 @@ public class Main {
 					throw new ParseException("Invalid player information '" + player + "'");
 				}
 			}
+			//Añado al final la pieza de los obstaculos
+			pieces.add(new Piece("*"));
 		}
 	}
 
@@ -760,6 +762,7 @@ public class Main {
 		case CONSOLE:
 			ArrayList<Player> players = new ArrayList<Player>();
 			for (int i = 0; i < pieces.size(); i++) {
+				//COMO TRATAMOS AQUI A LOS OBSTACULOS, PUES NO ENTRAN EN NINGUNO DE LOS 3 TIPOS
 				switch (playerModes.get(i)) {
 				case AI:
 					players.add(gameFactory.createAIPlayer(aiPlayerAlg));

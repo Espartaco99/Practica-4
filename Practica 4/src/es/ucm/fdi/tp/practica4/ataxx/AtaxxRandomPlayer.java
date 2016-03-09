@@ -37,10 +37,19 @@ public class AtaxxRandomPlayer extends Player {
 		int currRow = Utils.randomInt(rows);
 		int currCol = Utils.randomInt(cols);
 
-		// start at (currRow,currColl) and look for the first empty position.
+		// start at (currRow,currCol) and look for the first empty position.
 		while (true) {
-			if (board.getPosition(currRow, currCol) == null) {
-				return createMove(currRow, currCol, p);
+			if (board.getPosition(currRow, currCol) != null) {
+				//hecho para que en el caso 4, sea +2, y en el caso 0, sea -2
+				int nextRow = Utils.randomInt(4) + currRow - 2;
+				int nextCol = Utils.randomInt(4) + currCol - 2;
+				//La ficha tiene que moverse
+				while (nextRow == nextCol && nextRow == 0){
+					nextRow = Utils.randomInt(4) + currRow - 2;
+					nextCol = Utils.randomInt(4) + currCol - 2;
+				}
+				//Mirar si hay proteccion contra salirse del tablero
+				return createMove(currRow, currCol, nextRow, nextCol, p);
 			}
 			currCol = (currCol + 1) % cols;
 			if (currCol == 0) {
@@ -61,16 +70,16 @@ public class AtaxxRandomPlayer extends Player {
 	 * permitir la reutilizacion de esta clase en otros juegos similares,
 	 * sobrescribiendo este metodo.
 	 * 
-	 * @param row
-	 *            row number.
-	 * @param col
-	 *            column number..
+	 * @param rowOrigin
+	 *            rowOrigin number.
+	 * @param colOrigin
+	 *            colOriginumn number..
 	 * @param p
-	 *            Piece to place at ({@code row},{@code col}).
+	 *            Piece to place at ({@code rowOrigin},{@code colOrigin}).
 	 * @return
 	 */
-	protected GameMove createMove(int row, int col, Piece p) {
-		return new AtaxxMove(row, col, p);
+	protected GameMove createMove(int rowOrigin, int colOrigin, int rowDest, int colDest, Piece p) {
+		return new AtaxxMove(rowOrigin, colOrigin, rowDest, colDest, p);
 	}
 
 }

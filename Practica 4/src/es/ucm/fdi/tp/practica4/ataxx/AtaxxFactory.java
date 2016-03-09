@@ -91,6 +91,9 @@ public class AtaxxFactory implements GameFactory {
 		List<Piece> pieces = new ArrayList<Piece>();
 		pieces.add(new Piece("X"));
 		pieces.add(new Piece("O"));
+		if (obstacles > 0){
+			pieces.add(new Piece("*"));
+		}
 		return pieces;
 	}
 	

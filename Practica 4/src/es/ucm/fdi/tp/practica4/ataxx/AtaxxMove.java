@@ -20,23 +20,25 @@ public class AtaxxMove extends GameMove {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
+	protected int rowOrigin;
+	protected int colOrigin;
 	/**
-	 * The row where to place the piece return by {@link GameMove#getPiece()}.
+	 * The rowOrigin where to place the piece return by {@link GameMove#getPiece()}.
 	 * <p>
-	 * Fila en la que se coloca la ficha devuelta por
+	 * Fila en la que se colOriginoca la ficha devuelta por
 	 * {@link GameMove#getPiece()}.
 	 */
-	protected int row;
+	protected int rowDest;
 
 	/**
-	 * The column where to place the piece return by {@link GameMove#getPiece()}
+	 * The colOriginumn where to place the piece return by {@link GameMove#getPiece()}
 	 * .
 	 * <p>
-	 * Columna en la que se coloca la ficha devuelta por
+	 * colOriginumna en la que se colOriginoca la ficha devuelta por
 	 * {@link GameMove#getPiece()}.
 	 */
-	protected int col;
+	protected int colDest;
 
 	/**
 	 * This constructor should be used ONLY to get an instance of
@@ -55,63 +57,66 @@ public class AtaxxMove extends GameMove {
 
 	/**
 	 * Constructs a move for placing a piece of the type referenced by {@code p}
-	 * at position ({@code row},{@code col}).
+	 * at position ({@code rowOrigin},{@code colOrigin}).
 	 * 
 	 * <p>
 	 * Construye un movimiento para colocar una ficha del tipo referenciado por
-	 * {@code p} en la posicion ({@code row},{@code col}).
+	 * {@code p} en la posicion ({@code rowOrigin},{@code colOrigin}).
 	 * 
-	 * @param row
+	 * @param rowOrigin
 	 *            Number of row.
 	 *            <p>
 	 *            Numero de fila.
-	 * @param col
+	 * @param colOrigin
 	 *            Number of column.
 	 *            <p>
 	 *            Numero de columna.
 	 * @param p
-	 *            A piece to be place at ({@code row},{@code col}).
+	 *            A piece to be place at ({@code rowOrigin},{@code colOrigin}).
 	 *            <p>
-	 *            Ficha a colocar en ({@code row},{@code col}).
+	 *            Ficha a colocar en ({@code rowOrigin},{@code colOrigin}).
 	 */
-	public AtaxxMove(int row, int col, Piece p) {
+	public AtaxxMove(int rowOrigin, int colOrigin, int rowDest,int colDest, Piece p) {
 		super(p);
-		this.row = row;
-		this.col = col;
+		this.rowOrigin = rowOrigin;
+		this.colOrigin = colOrigin;
+		this.rowDest = rowDest;
+		this.colDest = colDest;
 	}
 	
 	
 	@Override
 	public void execute(Board board, List<Piece> pieces) {
-		//Introducir Obstaculos
-		if (board.getPosition(row, col) == null) {
-			board.setPosition(row, col, getPiece());
+		if (board.getPosition(rowOrigin, colOrigin) != null) {
+			board.setPosition(rowOrigin, colOrigin, getPiece());
 		} 
 		else {
-			throw new GameError("position (" + row + "," + col + ") is already occupied!");
+			throw new GameError("Position (" + rowOrigin + "," + colOrigin + ") has no pieces!");
 		}
 	}
 
 	/**
-	 * This move can be constructed from a string of the form "row SPACE col"
-	 * where row and col are integers representing a position.
+	 * This move can be constructed from a string of the form "rowOrigin SPACE colOrigin"
+	 * where rowOrigin and colOrigin are integers representing a position.
 	 * 
 	 * <p>
 	 * Se puede construir un movimiento desde un string de la forma
-	 * "row SPACE col" donde row y col son enteros que representan una casilla.
+	 * "rowOrigin SPACE colOrigin" donde rowOrigin y colOrigin son enteros que representan una casilla.
 	 */
 	@Override
 	public GameMove fromString(Piece p, String str) {
 		String[] words = str.split(" ");
-		if (words.length != 2) {
+		if (words.length != 4) {
 			return null;
 		}
 
 		try {
-			int row, col;
-			row = Integer.parseInt(words[0]);
-			col = Integer.parseInt(words[1]);
-			return createMove(row, col, p);
+			int rowOrigin, colOrigin, rowDest, colDest;
+			rowOrigin = Integer.parseInt(words[0]);
+			colOrigin = Integer.parseInt(words[1]);
+			rowDest = Integer.parseInt(words[2]);
+			colDest = Integer.parseInt(words[3]);
+			return createMove(rowOrigin, colOrigin, rowDest, colDest, p);
 		} catch (NumberFormatException e) {
 			return null;
 		}
@@ -129,23 +134,23 @@ public class AtaxxMove extends GameMove {
 	 * metodo del anterior para permitir utilizar esta clase para otros juegos
 	 * similares sobrescribiendo este metodo.
 	 * 
-	 * @param row
-	 *            Row of the move being created.
+	 * @param rowOrigin
+	 *            rowOrigin of the move being created.
 	 *            <p>
 	 *            Fila del nuevo movimiento.
 	 * 
-	 * @param col
-	 *            Column of the move being created.
+	 * @param colOrigin
+	 *            colOriginumn of the move being created.
 	 *            <p>
-	 *            Columna del nuevo movimiento.
+	 *            colOriginumna del nuevo movimiento.
 	 */
-	protected GameMove createMove(int row, int col, Piece p) {
-		return new AtaxxMove(row, col, p);
+	protected GameMove createMove(int rowOrigin, int colOrigin,int rowDest,int colDest, Piece p) {
+		return new AtaxxMove(rowOrigin, colOrigin, rowDest, colDest, p);
 	}
 
 	@Override
 	public String help() {
-		return "'row column', to place a piece at the corresponding position.";
+		return "'rowOrigin colOriginumn', to place a piece at the corresponding position.";
 	}
 
 	@Override
@@ -153,7 +158,7 @@ public class AtaxxMove extends GameMove {
 		if (getPiece() == null) {
 			return help();
 		} else {
-			return "Place a piece '" + getPiece() + "' at (" + row + "," + col + ")";
+			return "Place a piece '" + getPiece() + "' at (" + rowOrigin + "," + colOrigin + ")";
 		}
 	}
 }

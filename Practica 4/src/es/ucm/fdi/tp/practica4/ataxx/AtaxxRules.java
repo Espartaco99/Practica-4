@@ -3,6 +3,7 @@ package es.ucm.fdi.tp.practica4.ataxx;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.ucm.fdi.tp.basecode.bgame.Utils;
 import es.ucm.fdi.tp.basecode.bgame.model.Board;
 import es.ucm.fdi.tp.basecode.bgame.model.FiniteRectBoard;
 import es.ucm.fdi.tp.basecode.bgame.model.GameError;
@@ -70,10 +71,45 @@ public class AtaxxRules implements GameRules {
 
 	@Override
 	public Board createBoard(List<Piece> pieces) {
-		return new FiniteRectBoard(dim, dim);
+		return initializeBoard(pieces, new FiniteRectBoard(dim, dim));
 	}
 	
-	//Inicializar el tablero
+	/**
+	 * Inicializa el tablero, poniendo fichas en las posiciones nuevas
+	 * @param pieces Lista de piezas de los jugadores
+	 * @param board Tablero
+	 */
+	private Board initializeBoard(List<Piece> pieces, Board board){
+		board.setPosition(0, 0, pieces.get(0));
+		board.setPosition(dim - 1, dim - 1, pieces.get(0));
+		board.setPosition(0, dim - 1, pieces.get(1));
+		board.setPosition(dim - 1, 0, pieces.get(1));
+		//Añadir Obstaculos (en que posiciones los pongo) obstaculos
+		int i = 0;
+		while(i < obstacles){
+			int a = Utils.randomInt(dim - 1);
+			int b = Utils.randomInt(dim - 1);
+			//Si la posicion no esta ocupada, creo el obstaculo
+			if (board.getPosition(a, b) == null){
+				board.setPosition(a, b, pieces.get(pieces.size() - 1));
+				i++;
+			}
+		}
+		
+		/*
+		//Players == 3
+		if (pieces.get(2) != null){
+			board.setPosition(dim / 2, 0, pieces.get(2));
+			board.setPosition(dim / 2, dim - 1, pieces.get(2));
+		}
+		//Players == 4
+		if (pieces.get(3) != null){
+			board.setPosition(0, dim / 2, pieces.get(3));
+			board.setPosition(dim - 1, dim / 2, pieces.get(3));
+		}
+		*/
+		return board;
+	}
 
 	@Override
 	public Piece initialPlayer(Board board, List<Piece> playersPieces) {
@@ -166,11 +202,19 @@ public class AtaxxRules implements GameRules {
 	@Override
 	public List<GameMove> validMoves(Board board, List<Piece> playersPieces, Piece turn) {
 		List<GameMove> moves = new ArrayList<GameMove>();
-
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getCols(); j++) {
-				if (board.getPosition(i, j) == null) {
-					moves.add(new AtaxxMove(i, j, turn));
+				if (board.getPosition(i, j) != null) {
+					//Preguntar si va por pieza o solo mira el tablero
+					for (int k = 0; k < 5; k++){
+						for (int l = 0; l < 5; l++){
+							//Si la posicion nueva esta vacia la añado
+							if (board.getPosition(i + k - 2, j - l - 2) == null){
+								moves.add(new AtaxxMove(i, j, i + k - 2, j - l - 2, turn));
+							}
+						}
+					}
+					
 				}
 			}
 		}
