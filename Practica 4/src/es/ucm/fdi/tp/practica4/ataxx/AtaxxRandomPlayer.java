@@ -29,7 +29,7 @@ public class AtaxxRandomPlayer extends Player {
 		if (board.isFull()) {
 			throw new GameError("The board is full, cannot make a random move!!");
 		}
-
+		/*
 		int rows = board.getRows();
 		int cols = board.getCols();
 
@@ -56,7 +56,10 @@ public class AtaxxRandomPlayer extends Player {
 				currRow = (currRow + 1) % rows;
 			}
 		}
-
+		*/
+		List<GameMove> moves = rules.validMoves(board, pieces, p);
+		return moves.get(Utils.randomInt(moves.size() - 1));
+		
 	}
 
 	/**

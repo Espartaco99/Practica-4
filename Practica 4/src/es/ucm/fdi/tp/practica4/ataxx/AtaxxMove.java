@@ -84,14 +84,39 @@ public class AtaxxMove extends GameMove {
 		this.colDest = colDest;
 	}
 	
-	
+	//funka
 	@Override
 	public void execute(Board board, List<Piece> pieces) {
-		if (board.getPosition(rowOrigin, colOrigin) != null) {
-			board.setPosition(rowOrigin, colOrigin, getPiece());
-		} 
+		Piece p = board.getPosition(rowOrigin, colOrigin);
+		if (getPiece() == p){
+			if (p != null && !pieces.equals(p)){
+				if (rowDest >= 0 && rowDest < board.getRows() && colDest >= 0 && colDest < board.getCols() 
+						&& board.getPosition(rowDest, colDest) == null){
+					int row = Math.abs(rowDest - rowOrigin);
+					int col = Math.abs(colDest - colOrigin);
+					//Muevo 1 casilla la ficha
+					if (row <= 1 && col <= 1){
+						board.setPosition(rowDest, colDest, getPiece());
+					}
+					//Muevo 2 casillas la pieza y la elimino de su posicion original
+					else if (row == 2 && col <= 2 || row <= 2 && col == 2){
+						board.setPosition(rowDest, colDest, getPiece());
+						board.setPosition(rowOrigin, colOrigin, null);
+					}
+					else {
+						throw new GameError("Position (" + rowDest + "," + colDest + ") is 3 or more squares away from its original position!");
+					}
+				}
+				else {
+					throw new GameError("Position (" + rowDest + "," + colDest + ") is occupied by other piece or it´s out of range of the board!");
+				}
+			} 
+			else {
+				throw new GameError("Position (" + rowOrigin + "," + colOrigin + ") has no pieces or it´s an obstacle!");
+			}
+		}
 		else {
-			throw new GameError("Position (" + rowOrigin + "," + colOrigin + ") has no pieces!");
+			throw new GameError("Position (" + rowOrigin + "," + colOrigin + ") has a piece which is not yours!");
 		}
 	}
 
@@ -150,7 +175,28 @@ public class AtaxxMove extends GameMove {
 
 	@Override
 	public String help() {
-		return "'rowOrigin colOriginumn', to place a piece at the corresponding position.";
+		return "'rowOrigin columnOrigin rowDestiny colDestiny', to place a piece at the corresponding position.";
+	}
+
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AtaxxMove other = (AtaxxMove) obj;
+		if (colDest != other.colDest)
+			return false;
+		if (colOrigin != other.colOrigin)
+			return false;
+		if (rowDest != other.rowDest)
+			return false;
+		if (rowOrigin != other.rowOrigin)
+			return false;
+		return getPiece().equals(other.getPiece());
 	}
 
 	@Override

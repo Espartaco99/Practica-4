@@ -84,30 +84,36 @@ public class AtaxxRules implements GameRules {
 		board.setPosition(dim - 1, dim - 1, pieces.get(0));
 		board.setPosition(0, dim - 1, pieces.get(1));
 		board.setPosition(dim - 1, 0, pieces.get(1));
+		//Players == 3
+		if (pieces.size() == 3){
+			board.setPosition(dim / 2, 0, pieces.get(2));
+			board.setPosition(dim / 2, dim - 1, pieces.get(2));
+		}
+		//Players == 4
+		else if (pieces.size() == 4){
+			board.setPosition(dim / 2, 0, pieces.get(2));
+			board.setPosition(dim / 2, dim - 1, pieces.get(2));
+			board.setPosition(0, dim / 2, pieces.get(3));
+			board.setPosition(dim - 1, dim / 2, pieces.get(3));
+		}
+		else if (pieces.size() != 2){
+			throw new GameError("El numero de jugadores no es 2, 3 o 4, asi que creo el tablero por defecto");  
+		}
 		//Añadir Obstaculos (en que posiciones los pongo) obstaculos
 		int i = 0;
+		Piece obstacle = new Piece("*#123456780");
+		
 		while(i < obstacles){
 			int a = Utils.randomInt(dim - 1);
 			int b = Utils.randomInt(dim - 1);
 			//Si la posicion no esta ocupada, creo el obstaculo
 			if (board.getPosition(a, b) == null){
-				board.setPosition(a, b, pieces.get(pieces.size() - 1));
+				board.setPosition(a, b, obstacle);
 				i++;
 			}
 		}
 		
-		/*
-		//Players == 3
-		if (pieces.get(2) != null){
-			board.setPosition(dim / 2, 0, pieces.get(2));
-			board.setPosition(dim / 2, dim - 1, pieces.get(2));
-		}
-		//Players == 4
-		if (pieces.get(3) != null){
-			board.setPosition(0, dim / 2, pieces.get(3));
-			board.setPosition(dim - 1, dim / 2, pieces.get(3));
-		}
-		*/
+		
 		return board;
 	}
 
@@ -127,6 +133,7 @@ public class AtaxxRules implements GameRules {
 	}
 
 	@Override
+	//cambiar
 	public Pair<State, Piece> updateState(Board board, List<Piece> playersPieces, Piece lastPlayer) {
 		int j;
 		Piece p;
@@ -200,12 +207,13 @@ public class AtaxxRules implements GameRules {
 	}
 
 	@Override
+	//Hacer solo la lista de movimientos de la pieza pasada por parametro
 	public List<GameMove> validMoves(Board board, List<Piece> playersPieces, Piece turn) {
 		List<GameMove> moves = new ArrayList<GameMove>();
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getCols(); j++) {
-				if (board.getPosition(i, j) != null) {
-					//Preguntar si va por pieza o solo mira el tablero
+				//Si la pieza que pasamos esta en esa posicion, miramos todos los casos
+				if (board.getPosition(i, j) == turn) {
 					for (int k = 0; k < 5; k++){
 						for (int l = 0; l < 5; l++){
 							//Si la posicion nueva esta vacia la añado
@@ -215,6 +223,9 @@ public class AtaxxRules implements GameRules {
 						}
 					}
 					
+				}
+				else {
+					System.out.println("La posicion indicada no tiene nunguna pieza");
 				}
 			}
 		}

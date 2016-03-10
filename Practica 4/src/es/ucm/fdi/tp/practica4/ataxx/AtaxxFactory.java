@@ -28,13 +28,15 @@ import es.ucm.fdi.tp.basecode.bgame.views.GenericConsoleView;
  * para la descripcion del juego.
  */
 public class AtaxxFactory implements GameFactory {
-
+	
+	private static final int DEF_DIM = 7; 
+	private static final int DEF_OBS = 2; 
 	private int dim;
 	private int obstacles;
 
 	public AtaxxFactory() {
-		this(7);
-		obstacles = 0;
+		this(DEF_DIM);
+		obstacles = DEF_OBS;
 	}
 
 	public AtaxxFactory(int dim) {
@@ -42,15 +44,24 @@ public class AtaxxFactory implements GameFactory {
 			throw new GameError("Dimension must be at least 5: " + dim);
 		} else {
 			this.dim = dim;
+			obstacles = DEF_OBS;
 		}
 	}
-	
+	//El dummy esta para evitar lios entre constructoras
+	public AtaxxFactory(int obs, boolean dummy) {
+		this(DEF_DIM);
+		if (obs > (dim * dim) - 8){
+			throw new GameError("The number of obstacules must be less than " + (dim*dim));
+		} else {
+			this.obstacles = obs;
+		}
+	}
 	
 	public AtaxxFactory(int dim, int obs) {
 		if (dim < 5) {
 			throw new GameError("Dimension must be at least 5: " + dim);
 		}
-		else if (obs > dim * dim){
+		else if (obs > (dim * dim) - 8){
 			throw new GameError("The number of obstacules must be less than " + (dim*dim));
 		}
 		else {
@@ -91,9 +102,6 @@ public class AtaxxFactory implements GameFactory {
 		List<Piece> pieces = new ArrayList<Piece>();
 		pieces.add(new Piece("X"));
 		pieces.add(new Piece("O"));
-		if (obstacles > 0){
-			pieces.add(new Piece("*"));
-		}
 		return pieces;
 	}
 	
