@@ -88,6 +88,8 @@ public class AtaxxMove extends GameMove {
 	@Override
 	public void execute(Board board, List<Piece> pieces) {
 		Piece p = board.getPosition(rowOrigin, colOrigin);
+		//boolean done = false;
+		//La pieza que mueves tiene que ser una de tu turno
 		if (getPiece() == p){
 			if (p != null && !pieces.equals(p)){
 				if (rowDest >= 0 && rowDest < board.getRows() && colDest >= 0 && colDest < board.getCols() 
@@ -95,13 +97,14 @@ public class AtaxxMove extends GameMove {
 					int row = Math.abs(rowDest - rowOrigin);
 					int col = Math.abs(colDest - colOrigin);
 					//Muevo 1 casilla la ficha
-					if (row <= 1 && col <= 1){
+					if (row <= 2 && col <= 2){
 						board.setPosition(rowDest, colDest, getPiece());
-					}
-					//Muevo 2 casillas la pieza y la elimino de su posicion original
-					else if (row == 2 && col <= 2 || row <= 2 && col == 2){
-						board.setPosition(rowDest, colDest, getPiece());
-						board.setPosition(rowOrigin, colOrigin, null);
+						//Muevo 2 casillas la pieza y la elimino de su posicion original
+						if (row == 2 || col == 2){
+							board.setPosition(rowOrigin, colOrigin, null);
+						}
+					//Añadir cambio de fichas
+					changePieces(board, pieces);
 					}
 					else {
 						throw new GameError("Position (" + rowDest + "," + colDest + ") is 3 or more squares away from its original position!");
@@ -119,7 +122,31 @@ public class AtaxxMove extends GameMove {
 			throw new GameError("Position (" + rowOrigin + "," + colOrigin + ") has a piece which is not yours!");
 		}
 	}
-
+	
+	/**
+	 * Executes the change of pieces caused by the movement and flow of the game
+	 * @param board A board on which the move operates. 
+	 * @param pieces A list of pieces that are involved in the game. 
+	 */
+	
+	private void changePieces(Board board, List<Piece> pieces) {
+		Piece p;
+		//Mira todas las posiciones adyacentes
+		for (int rowAux = rowDest - 1; rowAux < rowDest + 2; rowAux++){
+			for (int colAux = colDest - 1; colAux < colDest + 2; colAux++){
+				if (rowAux >= 0 && rowAux < board.getRows() && colAux >= 0 && colAux < board.getCols()){
+					p = board.getPosition(rowAux, colAux);
+					//If the piece in the square is diferent from the one is playing, not null and is on the list of players
+					//this piece is captured and changed to be one of the player pieces
+					if (getPiece() != p && p != null && pieces.indexOf(p) != -1){
+						board.setPosition(rowAux, colAux, getPiece());
+					}
+				}
+			}
+		}
+	}
+	
+	
 	/**
 	 * This move can be constructed from a string of the form "rowOrigin SPACE colOrigin"
 	 * where rowOrigin and colOrigin are integers representing a position.
@@ -204,7 +231,7 @@ public class AtaxxMove extends GameMove {
 		if (getPiece() == null) {
 			return help();
 		} else {
-			return "Place a piece '" + getPiece() + "' at (" + rowOrigin + "," + colOrigin + ")";
+			return "Place a piece '" + getPiece() + "' at (" + rowDest + "," + colDest + ")";
 		}
 	}
 }

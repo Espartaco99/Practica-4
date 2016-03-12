@@ -29,36 +29,8 @@ public class AtaxxRandomPlayer extends Player {
 		if (board.isFull()) {
 			throw new GameError("The board is full, cannot make a random move!!");
 		}
-		/*
-		int rows = board.getRows();
-		int cols = board.getCols();
-
-		// pick an initial random position
-		int currRow = Utils.randomInt(rows);
-		int currCol = Utils.randomInt(cols);
-
-		// start at (currRow,currCol) and look for the first empty position.
-		while (true) {
-			if (board.getPosition(currRow, currCol) != null) {
-				//hecho para que en el caso 4, sea +2, y en el caso 0, sea -2
-				int nextRow = Utils.randomInt(4) + currRow - 2;
-				int nextCol = Utils.randomInt(4) + currCol - 2;
-				//La ficha tiene que moverse
-				while (nextRow == nextCol && nextRow == 0){
-					nextRow = Utils.randomInt(4) + currRow - 2;
-					nextCol = Utils.randomInt(4) + currCol - 2;
-				}
-				//Mirar si hay proteccion contra salirse del tablero
-				return createMove(currRow, currCol, nextRow, nextCol, p);
-			}
-			currCol = (currCol + 1) % cols;
-			if (currCol == 0) {
-				currRow = (currRow + 1) % rows;
-			}
-		}
-		*/
 		List<GameMove> moves = rules.validMoves(board, pieces, p);
-		return moves.get(Utils.randomInt(moves.size() - 1));
+		return moves.get(Utils.randomInt(moves.size()));
 		
 	}
 

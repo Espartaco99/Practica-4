@@ -289,8 +289,8 @@ public class Main {
 			CommandLine line = parser.parse(cmdLineOptions, args);
 			parseHelpOption(line, cmdLineOptions);
 			parseDimOptionn(line);
-			parseGameOption(line);
 			parseObstaclesOption(line);
+			parseGameOption(line);
 			parseViewOption(line);
 			parseMultiViewOption(line);
 			parsePlayersOptions(line);
@@ -557,7 +557,7 @@ public class Main {
 				if (dimRows != null && dimCols != null && dimRows == dimCols && dimRows % 2 != 0){
 					gameFactory = new AtaxxFactory(dimRows, obstacles);
 				} else {
-					gameFactory = new AtaxxFactory();
+					gameFactory = new AtaxxFactory(obstacles, false);
 				}
 			}
 			break;

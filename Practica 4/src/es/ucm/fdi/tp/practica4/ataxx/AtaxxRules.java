@@ -66,7 +66,7 @@ public class AtaxxRules implements GameRules {
 		if (obstacles == 0){
 			return "Ataxx " + dim + "x" + dim;
 		}
-		else return "Ataxx " + dim + "x" + dim + " with " + obstacles + "obstacles";
+		else return "Ataxx " + dim + "x" + dim + " with " + obstacles + " obstacles";
 	}
 
 	@Override
@@ -76,8 +76,8 @@ public class AtaxxRules implements GameRules {
 	
 	/**
 	 * Inicializa el tablero, poniendo fichas en las posiciones nuevas
-	 * @param pieces Lista de piezas de los jugadores
-	 * @param board Tablero
+	 * @param pieces The list of players
+	 * @param board The board in which the game is played
 	 */
 	private Board initializeBoard(List<Piece> pieces, Board board){
 		board.setPosition(0, 0, pieces.get(0));
@@ -97,15 +97,15 @@ public class AtaxxRules implements GameRules {
 			board.setPosition(dim - 1, dim / 2, pieces.get(3));
 		}
 		else if (pieces.size() != 2){
-			throw new GameError("El numero de jugadores no es 2, 3 o 4, asi que creo el tablero por defecto");  
+			throw new GameError("The number of players isnt 2, 3 or 4, so i create the default board");  
 		}
 		//Añadir Obstaculos (en que posiciones los pongo) obstaculos
 		int i = 0;
 		Piece obstacle = new Piece("*#123456780");
 		
 		while(i < obstacles){
-			int a = Utils.randomInt(dim - 1);
-			int b = Utils.randomInt(dim - 1);
+			int a = Utils.randomInt(dim);
+			int b = Utils.randomInt(dim);
 			//Si la posicion no esta ocupada, creo el obstaculo
 			if (board.getPosition(a, b) == null){
 				board.setPosition(a, b, obstacle);
@@ -119,7 +119,10 @@ public class AtaxxRules implements GameRules {
 
 	@Override
 	public Piece initialPlayer(Board board, List<Piece> playersPieces) {
-		return playersPieces.get(0);
+		//Protection against situations where the player 1 (index 0) cant do a first move, for example, if you create a lot of obstacles
+		//(for example, 41 (the cap of obstacles in a 7x7 board) with only 2 players)
+		//I use playersPieces.size() - 1 as the player so that the next is the player 1 (index 0)
+		return nextPlayer(board, playersPieces, playersPieces.get(playersPieces.size() - 1));
 	}
 
 	@Override
@@ -133,72 +136,98 @@ public class AtaxxRules implements GameRules {
 	}
 
 	@Override
-	//cambiar
-	public Pair<State, Piece> updateState(Board board, List<Piece> playersPieces, Piece lastPlayer) {
-		int j;
-		Piece p;
-		//Contar las fichas, el que tenga mas de los 2 gana el juego
+	public Pair<State, Piece> updateState(Board board, List<Piece> pieces, Piece lastPlayer){
+		int[] numPieces = countPieces(board, pieces);
+		//If the board is full, the game is over, else it could be continue or over if only one player has pieces 
+		if (board.isFull()){
+			Piece winner = pieces.get(0);
+			int playersPiecesMax = numPieces[0];
+			boolean draw = false;
+			for(int i = 1; i < pieces.size(); i++){
+				if(playersPiecesMax == numPieces[i]){
+					draw = true;
+				}
+				else if(playersPiecesMax < numPieces[i]){
+					playersPiecesMax = numPieces[i];
+					winner = pieces.get(i);
+					draw = false;
+					}
+			}
+			if (draw){
+				return new Pair<State, Piece>(State.Draw, null);
+			}
+			else {
+				return new Pair <State, Piece>(State.Won, winner);
+			}
+		}
+		else {
+			//Boolean to control that only one player has pieces left, if 2 or more players has pieces, the game continues
+			boolean hasNoPieces = true;
+			//Check that all players has pieces in the board
+			for (int i = 0; i < pieces.size(); i++){
+				//i is the player and j is a counter to see if all the other players hasnt got pieces, so the game is over
+				for (int j = i + 1; j < i + pieces.size() && hasNoPieces; j++){
+					if (numPieces[j % pieces.size()] > 0){
+						hasNoPieces = false;
+					}
+				}
+				//If only one player has pieces, he is the winner
+				if (hasNoPieces){
+					return new Pair <State, Piece>(State.Won, pieces.get(i));
+				}
+				hasNoPieces = true;
+			}
+			return gameInPlayResult;
+		}
 		
-		
-		// check rows & cols
-		for (int i = 0; i < dim; i++) {
-			// row i
-			p = board.getPosition(i, 0);
-			if (p != null) {
-				j = 1;
-				while (j < dim && board.getPosition(i, j) == p)
-					j++;
-				if (j == dim)
-					return new Pair<State, Piece>(State.Won, p);
-			}
+	}
 
-			// col i
-			p = board.getPosition(0, i);
-			if (p != null) {
-				j = 1;
-				while (j < dim && board.getPosition(j, i) == p)
-					j++;
-				if (j == dim)
-					return new Pair<State, Piece>(State.Won, p);
+	/**
+	 * Count the number of pieces each player has in the board
+	 * @param board The board in which the game is played
+	 * @param playersPieces The list of players
+	 * @return An array of int with all the pieces of each player, the index of List<Piece> is used for the array
+	 */
+	private int[] countPieces(Board board, List<Piece> playersPieces) {
+		int[] numPieces = {0,0,0,0};
+		for (int row = 0; row < dim; row++){
+			for (int col = 0; col < dim; col++){
+				Piece p = board.getPosition(row, col);
+				int numPlayer = playersPieces.indexOf(p);
+				//Obstacles dont count
+				if (numPlayer != -1){
+					numPieces[numPlayer]++;
+				}
 			}
 		}
-
-		// diagonal 1 - left-up to right-bottom
-		p = board.getPosition(0, 0);
-		if (p != null) {
-			j = 1;
-			while (j < dim && board.getPosition(j, j) == p) {
-				j++;
-			}
-			if (j == dim) {
-				return new Pair<State, Piece>(State.Won, p);
-			}
-		}
-
-		// diagonal 2 - left-bottom to right-up
-		p = board.getPosition(dim - 1, 0);
-		if (p != null) {
-			j = 1;
-			while (j < dim && board.getPosition(dim - j - 1, j) == p) {
-				j++;
-			}
-			if (j == dim) {
-				return new Pair<State, Piece>(State.Won, p);
-			}
-		}
-
-		if (board.isFull()) {
-			return new Pair<State, Piece>(State.Draw, null);
-		}
-
-		return gameInPlayResult;
+		return numPieces;
 	}
 
 	@Override
 	public Piece nextPlayer(Board board, List<Piece> playersPieces, Piece lastPlayer) {
-		List<Piece> pieces = playersPieces;
-		int i = pieces.indexOf(lastPlayer);
-		return pieces.get((i + 1) % pieces.size());
+		int nextPlayer = (playersPieces.indexOf(lastPlayer) + 1) % playersPieces.size();
+		Piece p;
+		boolean hasMoves = false;
+		//The way is implemented updateState, the board won`t be full, so there won`t be an infinite loop
+		while (!hasMoves){
+			for (int row = 0; row < dim && !hasMoves; row++){
+				for (int col = 0; col < dim && !hasMoves; col++){
+					p = board.getPosition(row, col);
+					//Looking for the moves the nextPlayer has, if there aren`t posible moves, the player next has the turn 
+					if (p == playersPieces.get(nextPlayer)){
+						List<GameMove> moves = adyacentMoves(board, p, new ArrayList<GameMove>(), row, col);
+						if (!moves.isEmpty()){
+							hasMoves = true;
+						}
+					}
+				}
+			}
+			//if the player has no moves, the turn goes to the next player
+			if (!hasMoves){
+				nextPlayer = (nextPlayer + 1) % playersPieces.size();
+			}
+		}
+		return playersPieces.get(nextPlayer);
 	}
 
 	@Override
@@ -210,26 +239,38 @@ public class AtaxxRules implements GameRules {
 	//Hacer solo la lista de movimientos de la pieza pasada por parametro
 	public List<GameMove> validMoves(Board board, List<Piece> playersPieces, Piece turn) {
 		List<GameMove> moves = new ArrayList<GameMove>();
-		for (int i = 0; i < board.getRows(); i++) {
-			for (int j = 0; j < board.getCols(); j++) {
-				//Si la pieza que pasamos esta en esa posicion, miramos todos los casos
-				if (board.getPosition(i, j) == turn) {
-					for (int k = 0; k < 5; k++){
-						for (int l = 0; l < 5; l++){
-							//Si la posicion nueva esta vacia la añado
-							if (board.getPosition(i + k - 2, j - l - 2) == null){
-								moves.add(new AtaxxMove(i, j, i + k - 2, j - l - 2, turn));
-							}
-						}
-					}
-					
-				}
-				else {
-					System.out.println("La posicion indicada no tiene nunguna pieza");
+		for (int i = 0; i < board.getRows(); i++){
+			for (int j = 0; j < board.getCols(); j++){
+				//Si la pieza que pasamos está en esa posicion, miramos todos los casos
+				if (board.getPosition(i, j) == turn){
+					moves = adyacentMoves(board, turn, moves, i, j);
 				}
 			}
 		}
 		return moves;
 	}
-
+	
+	/**
+	 * Check the posible moves of the piece given in a 2 square in any direction area 
+	 * @param board The board in which the game is being played
+	 * @param turn The piece which we are checking
+	 * @param moves The list of moves we create
+	 * @param row The row of the piece (turn) in the board 
+	 * @param col The column of the piece (turn) in the board 
+	 * @return The list of moves with all the posibilities
+	 */
+	private List<GameMove> adyacentMoves(Board board, Piece turn, List<GameMove> moves, int row, int col) {
+		for (int k = 0; k < 5; k++){
+			for (int l = 0; l < 5; l++){
+				int newRow = row + k - 2, newCol = col + l - 2;
+				//If the new position is in the board and has no piece, the position is added to the board
+				if (newRow >= 0 && newRow < dim && newCol >= 0 && newCol < dim && board.getPosition(newRow, newCol) == null){
+					moves.add(new AtaxxMove(row, col, newRow, newCol, turn));
+				}
+			}
+		}
+		return moves;
+	}
+	
+	
 }
